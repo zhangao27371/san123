@@ -289,7 +289,7 @@
   <div class="relative w-full max-w-6xl aspect-[16/10] overflow-hidden rounded-lg shadow-2xl border-2 border-gray-700">
     <!-- 背景图 -->
     <div class="absolute inset-0 z-0">
-      <img src="./img/beijing_01.png" alt="背景图" class="w-full h-full object-cover opacity-90">
+      <img src="./beijing/beijing_01.png" alt="背景图" class="w-full h-full object-cover opacity-90">
       <!-- 半透明遮罩增强文字可读性 -->
       <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/50"></div>
     </div>
@@ -542,11 +542,11 @@
       }
     }
     
-    // 图片前缀映射 - 修正为当前目录下的img文件夹
-    const imagePrefixes = {
-      helmet: './img/toukiu (',
-      armor: './img/huajia (',
-      gun: './img/qiangxie ('
+    // 图片路径映射 - 指向四个不同的文件夹
+    const imagePaths = {
+      helmet: './toukiu/toukiu (',
+      armor: './hujia/huajia (',
+      gun: './qiangxie/qiangxie ('
     };
     
     // 生成带权重的随机头盔（根据当前模式调整）
@@ -679,8 +679,8 @@
         randomNum = Math.floor(Math.random() * maxImages) + 1;
       }
       
-      // 图片路径指向当前目录下的img文件夹
-      const imagePath = `${imagePrefixes[type]}${randomNum}).png`;
+      // 根据类型从不同文件夹加载图片
+      const imagePath = `${imagePaths[type]}${randomNum}).png`;
       
       imgElement.style.opacity = '0';
       imgElement.style.transform = 'scale(0.5) rotate(-10deg)';
