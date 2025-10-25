@@ -263,6 +263,7 @@
 
   <script>
     let currentMode = 'balanced';
+    let updateTimer = null;
     
     // 初始化存储
     function initStorage() {
@@ -272,23 +273,18 @@
       // 初始化单个装备冷却数据
       ['helmet', 'armor', 'gun'].forEach(type => {
         const storedKey = `cooldown_${type}`;
-        let storedData = localStorage.getItem(storedKey);
+        let data;
         
-        if (!storedData) {
+        try {
+          data = JSON.parse(localStorage.getItem(storedKey));
+        } catch (e) {
+          data = null;
+        }
+        
+        // 检查数据有效性或不存在
+        if (!data || typeof data.count !== 'number' || typeof data.resetTime !== 'number' || now > data.resetTime) {
           const initData = { count: 3, resetTime: now + hourMs };
           localStorage.setItem(storedKey, JSON.stringify(initData));
-        } else {
-          try {
-            const data = JSON.parse(storedData);
-            if (data.count === undefined || data.resetTime === undefined || now > data.resetTime) {
-              data.count = 3;
-              data.resetTime = now + hourMs;
-              localStorage.setItem(storedKey, JSON.stringify(data));
-            }
-          } catch (e) {
-            const initData = { count: 3, resetTime: now + hourMs };
-            localStorage.setItem(storedKey, JSON.stringify(initData));
-          }
         }
       });
       
@@ -298,6 +294,7 @@
       }
       
       updateButtonStates();
+      scheduleNextUpdate();
     }
     
     // 格式化剩余时间显示
@@ -315,27 +312,38 @@
       }
     }
     
-    // 更新按钮状态（核心修复：次数用完后显示1小时倒计时）
+    // 更新按钮状态
     function updateButtonStates() {
       const now = Date.now();
       
       // 更新单个按钮
       ['helmet', 'armor', 'gun'].forEach(type => {
         const storedKey = `cooldown_${type}`;
-        const data = JSON.parse(localStorage.getItem(storedKey));
+        let data;
+        try {
+          data = JSON.parse(localStorage.getItem(storedKey));
+        } catch (e) {
+          data = { count: 0, resetTime: now }; // 防止崩溃，设为无效状态
+        }
+        
+        // 确保数据有效性
+        if (!data || typeof data.count !== 'number' || typeof data.resetTime !== 'number') {
+          data = { count: 3, resetTime: now + 3600000 };
+          localStorage.setItem(storedKey, JSON.stringify(data));
+        }
+
         const btn = document.getElementById(`${type}Btn`);
         const countEl = document.getElementById(`${type}Count`);
         
-        // 计算剩余时间
-        const remainingMs = data.resetTime - now;
+        // 计算剩余时间，确保非负
+        const remainingMs = Math.max(0, data.resetTime - now);
         
-        // 显示次数或倒计时
         if (data.count > 0) {
           countEl.textContent = `${data.count}次`;
           btn.disabled = false;
           btn.classList.remove('opacity-60', 'cursor-not-allowed');
         } else if (remainingMs > 0) {
-          // 次数用完，显示倒计时（核心修复点）
+          // 次数用完，显示倒计时
           countEl.textContent = formatRemainingTime(remainingMs);
           btn.disabled = true;
           btn.classList.add('opacity-60', 'cursor-not-allowed');
@@ -367,8 +375,19 @@
       }
     }
     
-    // 每1秒更新一次按钮状态
-    setInterval(updateButtonStates, 1000);
+    // 智能调度下一次更新
+    function scheduleNextUpdate() {
+      if (updateTimer) clearTimeout(updateTimer);
+      
+      const now = Date.now();
+      const nextUpdate = Math.ceil(now / 1000) * 1000; // 下一个整秒
+      const delay = nextUpdate - now;
+      
+      updateTimer = setTimeout(() => {
+        updateButtonStates();
+        scheduleNextUpdate(); // 递归调度
+      }, delay);
+    }
     
     // 模式切换
     function setMode(mode) {
@@ -436,37 +455,44 @@
     };
     
     // 随机生成逻辑
-    function getWeightedNum(type, max) {
+    function getWeightedNum(max) {
       if (currentMode === 'random') {
         return Math.floor(Math.random() * max) + 1;
       }
       
       const weights = [];
+      const midPoint = Math.floor(max / 2);
+      
       for (let i = 1; i <= max; i++) {
-        let weight = 3;
+        let weight = 1; // 基础权重
         
-        // 根据模式调整权重
-        if (type !== 'gun') {
-          if (currentMode === 'balanced' && i >= 10 && i <= 20) weight += 2;
-          if (currentMode === 'aggressive' && i >= 15 && i <= 25) weight += 3;
-        } else {
-          if (currentMode === 'balanced' && i >= 20 && i <= 40) weight += 2;
-          if (currentMode === 'aggressive' && i >= 30 && i <= 59) weight += 3;
+        if (currentMode === 'balanced') {
+          // 均衡模式：中间区域权重更高
+          const distance = Math.abs(i - midPoint);
+          weight += Math.max(0, 3 - distance);
+        } else if (currentMode === 'aggressive') {
+          // 猛攻模式：高端区域权重更高
+          const highThreshold = Math.floor(max * 0.6);
+          if (i >= highThreshold) {
+            weight += 3;
+          }
         }
         
-        weights.push({num: i, weight});
+        weights.push({ num: i, weight });
       }
       
-      const total = weights.reduce((sum, item) => sum + item.weight, 0);
-      let random = Math.random() * total;
-      let cumulative = 0;
+      // 更安全的随机选择
+      const totalWeight = weights.reduce((sum, item) => sum + item.weight, 0);
+      let random = Math.random() * totalWeight;
       
-      for (let item of weights) {
-        cumulative += item.weight;
-        if (random < cumulative) return item.num;
+      for (const item of weights) {
+        random -= item.weight;
+        if (random <= 0) {
+          return item.num;
+        }
       }
       
-      return Math.floor(Math.random() * max) + 1;
+      return weights[weights.length - 1].num; // 兜底
     }
     
     // 加载图片
@@ -478,8 +504,26 @@
       // 重置状态
       img.style.opacity = '0';
       placeholder.classList.remove('hidden');
+      placeholder.innerHTML = `
+        <i class="fa fa-spinner fa-spin text-5xl mb-3 text-neon"></i>
+        <p class="text-gray-400/80 text-sm">加载中...</p>
+      `;
+
+      // 添加加载超时
+      const timeout = setTimeout(() => {
+        if (img.style.opacity === '0') { // 如果还没加载成功
+          placeholder.innerHTML = `
+            <i class="fa fa-exclamation-triangle text-5xl mb-3 text-yellow-400"></i>
+            <p class="text-gray-400/80 text-sm">图片加载超时</p>
+            <button onclick="loadImage('${type}', ${num})" class="mt-2 text-neon text-sm">
+              <i class="fa fa-refresh"></i> 重试
+            </button>
+          `;
+        }
+      }, 5000);
       
       img.onload = () => {
+        clearTimeout(timeout);
         placeholder.classList.add('hidden');
         // 淡入效果
         setTimeout(() => {
@@ -488,8 +532,14 @@
       };
       
       img.onerror = () => {
-        alert(`图片加载失败: ${path}`);
-        placeholder.classList.remove('hidden');
+        clearTimeout(timeout);
+        placeholder.innerHTML = `
+          <i class="fa fa-image text-5xl mb-3 text-gray-400"></i>
+          <p class="text-gray-400/80 text-sm">图片加载失败</p>
+          <button onclick="loadImage('${type}', ${num})" class="mt-2 text-neon text-sm">
+            <i class="fa fa-refresh"></i> 重试
+          </button>
+        `;
       };
       
       img.src = path;
@@ -498,17 +548,26 @@
     // 单个刷新
     function randomizeSingle(type, max) {
       const storedKey = `cooldown_${type}`;
-      const data = JSON.parse(localStorage.getItem(storedKey));
+      let data;
+      try {
+        data = JSON.parse(localStorage.getItem(storedKey));
+      } catch (e) {
+        alert('数据读取错误，请刷新页面重试');
+        return;
+      }
       
       // 检查是否还有次数
-      if (data.count <= 0) return;
+      if (data.count <= 0) {
+        updateButtonStates(); // 立即更新UI，显示倒计时
+        return;
+      }
       
       // 减少次数并保存
       data.count--;
       localStorage.setItem(storedKey, JSON.stringify(data));
       
       // 生成随机数并加载图片
-      const num = getWeightedNum(type, max);
+      const num = getWeightedNum(max);
       loadImage(type, num);
       
       // 立即更新按钮状态
@@ -521,24 +580,27 @@
       const allLastUsed = parseInt(localStorage.getItem('allLastUsed') || '0');
       
       // 检查冷却时间
-      if (now - allLastUsed < 30000) return;
+      if (now - allLastUsed < 30000) {
+        updateButtonStates(); // 立即更新UI，显示倒计时
+        return;
+      }
       
       // 记录使用时间
       localStorage.setItem('allLastUsed', now.toString());
       
       // 刷新护甲
-      const armorNum = getWeightedNum('armor', 25);
+      const armorNum = getWeightedNum(25);
       loadImage('armor', armorNum);
       
       // 150ms后刷新头盔
       setTimeout(() => {
-        const helmetNum = getWeightedNum('helmet', 25);
+        const helmetNum = getWeightedNum(25);
         loadImage('helmet', helmetNum);
       }, 150);
       
       // 300ms后刷新枪械
       setTimeout(() => {
-        const gunNum = getWeightedNum('gun', 59);
+        const gunNum = getWeightedNum(59);
         loadImage('gun', gunNum);
       }, 300);
       
