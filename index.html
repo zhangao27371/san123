@@ -430,7 +430,7 @@
     
     // 密码验证
     function verifyPassword() {
-      if (document.getElementById('adminPassword').value === 'admin') {
+      if (document.getElementById('adminPassword').value === 'root') {
         const now = Date.now();
         ['helmet', 'armor', 'gun'].forEach(type => {
           localStorage.setItem(`cooldown_${type}`, JSON.stringify({
@@ -613,3 +613,4 @@
   </script>
 </body>
 </html>
+
