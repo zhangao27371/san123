@@ -7,7 +7,7 @@
   <title>三角洲行动随机装备</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  
+  <!--手机端  -->
   <script>
     tailwind.config = {
       theme: {
@@ -15,7 +15,6 @@
           colors: {
             primary: '#1a365d',
             accent: '#fc814a',
-            dark: '#17202a',
             neon: '#00f7ff'
           }
         }
@@ -31,153 +30,191 @@
         align-items: center;
         justify-content: center;
       }
-      .card-mobile {
-        background: rgba(23, 32, 42, 0.85);
+      .glass-effect {
+        backdrop-filter: blur(8px);
+        background: rgba(23, 32, 42, 0.65);
+      }
+      .image-container {
+        background: rgba(0, 0, 0, 0.35);
         backdrop-filter: blur(4px);
       }
     }
   </style>
 </head>
-<body class="bg-dark text-white min-h-screen p-3">
-  <!-- 标题区域 -->
-  <div class="text-center mb-4">
-    <h1 class="text-[clamp(1.4rem,6vw,2rem)] font-bold text-neon mb-2">三角洲行动随机装备</h1>
-    <div class="w-32 h-1 bg-accent mx-auto rounded-full mb-3"></div>
-    
-    <!-- 模式选择 -->
-    <div class="flex gap-2 mb-3">
-      <button onclick="setMode('random')" class="flex-1 bg-primary text-white py-2 rounded btn-touch text-sm" id="randomMode">
-        随机
-      </button>
-      <button onclick="setMode('balanced')" class="flex-1 bg-neon text-dark py-2 rounded btn-touch text-sm font-bold" id="balancedMode">
-        均衡
-      </button>
-      <button onclick="setMode('aggressive')" class="flex-1 bg-primary text-white py-2 rounded btn-touch text-sm" id="aggressiveMode">
-        猛攻
-      </button>
-    </div>
+<body class="text-white min-h-screen overflow-y-auto">
+  <!-- 主背景图（固定不动） -->
+  <div class="fixed inset-0 z-0">
+    <img src="./beijing/beijing_01.png" alt="背景" class="w-full h-full object-cover">
+    <!-- 半透明遮罩确保文字清晰可读 -->
+    <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60"></div>
   </div>
 
-  <!-- 主内容区 -->
-  <div class="space-y-4 mb-6">
-    <!-- 头盔 -->
-    <div class="card-mobile rounded-lg p-3 border border-gray-700">
-      <h2 class="text-lg font-bold text-accent mb-2 flex items-center">
-        <i class="fa fa-shield mr-2"></i>头盔
-      </h2>
-      <div class="bg-gray-800 rounded-md overflow-hidden mb-3 aspect-[4/3] flex items-center justify-center">
-        <img id="helmetImage" src="" alt="头盔" class="max-w-[80%] max-h-[80%] hidden">
-        <div id="helmetPlaceholder" class="text-center">
-          <i class="fa fa-helmet-battle text-4xl mb-2 text-gray-500"></i>
-          <p class="text-gray-500 text-sm">点击获取装备</p>
-        </div>
+  <!-- 可滚动内容区 -->
+  <div class="relative z-10 p-4 pb-32">
+    <!-- 标题区域 -->
+    <div class="text-center mb-6 pt-4">
+      <h1 class="text-[clamp(1.5rem,7vw,2.2rem)] font-bold text-neon mb-2 drop-shadow-[0_0_8px_rgba(0,247,255,0.5)]">
+        三角洲行动随机装备
+      </h1>
+      <div class="w-36 h-1 bg-accent mx-auto rounded-full mb-4"></div>
+      
+      <!-- 模式选择按钮 -->
+      <div class="flex gap-3 mb-2">
+        <button onclick="setMode('random')" class="flex-1 bg-primary/80 text-white py-2.5 rounded-lg btn-touch text-sm" id="randomMode">
+          随机
+        </button>
+        <button onclick="setMode('balanced')" class="flex-1 bg-neon text-primary py-2.5 rounded-lg btn-touch text-sm font-bold" id="balancedMode">
+          均衡
+        </button>
+        <button onclick="setMode('aggressive')" class="flex-1 bg-primary/80 text-white py-2.5 rounded-lg btn-touch text-sm" id="aggressiveMode">
+          猛攻
+        </button>
       </div>
-      <button onclick="randomizeSingle('helmet', 25)" 
-              class="w-full bg-primary hover:bg-primary/80 text-white py-3 rounded btn-touch flex items-center justify-center">
-        <i class="fa fa-refresh mr-2"></i> 刷新头盔
-        <span class="ml-2 bg-accent text-dark px-2 py-0.5 rounded text-xs" id="helmetCount">3次</span>
-      </button>
     </div>
-    
-    <!-- 护甲 -->
-    <div class="card-mobile rounded-lg p-3 border border-gray-700">
-      <h2 class="text-lg font-bold text-accent mb-2 flex items-center">
-        <i class="fa fa-user-shield mr-2"></i>护甲
-      </h2>
-      <div class="bg-gray-800 rounded-md overflow-hidden mb-3 aspect-[4/3] flex items-center justify-center">
-        <img id="armorImage" src="" alt="护甲" class="max-w-[80%] max-h-[80%] hidden">
-        <div id="armorPlaceholder" class="text-center">
-          <i class="fa fa-shield-alt text-4xl mb-2 text-gray-500"></i>
-          <p class="text-gray-500 text-sm">点击获取装备</p>
+
+    <!-- 装备展示区（可随页面滚动） -->
+    <div class="space-y-6">
+      <!-- 头盔 -->
+      <div class="glass-effect rounded-xl p-4 border border-gray-700/30">
+        <h2 class="text-xl font-bold text-accent mb-3 flex items-center">
+          <i class="fa fa-shield mr-2"></i>头盔
+        </h2>
+        <div class="image-container rounded-lg overflow-hidden mb-4 aspect-[4/3] flex items-center justify-center">
+          <img id="helmetImage" src="" alt="头盔" class="max-w-[80%] max-h-[80%] hidden">
+          <div id="helmetPlaceholder" class="text-center p-4">
+            <i class="fa fa-helmet-battle text-4xl mb-2 text-gray-300"></i>
+            <p class="text-gray-300 text-sm">点击下方按钮获取装备</p>
+          </div>
         </div>
+        <button onclick="randomizeSingle('helmet', 25)" 
+                class="w-full bg-primary/90 hover:bg-primary text-white py-3 rounded-lg btn-touch flex items-center justify-center">
+          <i class="fa fa-refresh mr-2"></i> 刷新头盔
+          <span class="ml-2 bg-accent text-dark px-2 py-0.5 rounded text-xs" id="helmetCount">3次</span>
+        </button>
       </div>
-      <button onclick="randomizeSingle('armor', 25)" 
-              class="w-full bg-primary hover:bg-primary/80 text-white py-3 rounded btn-touch flex items-center justify-center">
-        <i class="fa fa-refresh mr-2"></i> 刷新护甲
-        <span class="ml-2 bg-accent text-dark px-2 py-0.5 rounded text-xs" id="armorCount">3次</span>
-      </button>
-    </div>
-    
-    <!-- 枪械 -->
-    <div class="card-mobile rounded-lg p-3 border border-gray-700">
-      <h2 class="text-lg font-bold text-accent mb-2 flex items-center">
-        <i class="fa fa-crosshairs mr-2"></i>枪械
-      </h2>
-      <div class="bg-gray-800 rounded-md overflow-hidden mb-3 aspect-[4/3] flex items-center justify-center">
-        <img id="gunImage" src="" alt="枪械" class="max-w-[80%] max-h-[80%] hidden">
-        <div id="gunPlaceholder" class="text-center">
-          <i class="fa fa-firearms text-4xl mb-2 text-gray-500"></i>
-          <p class="text-gray-500 text-sm">点击获取装备</p>
+      
+      <!-- 护甲 -->
+      <div class="glass-effect rounded-xl p-4 border border-gray-700/30">
+        <h2 class="text-xl font-bold text-accent mb-3 flex items-center">
+          <i class="fa fa-user-shield mr-2"></i>护甲
+        </h2>
+        <div class="image-container rounded-lg overflow-hidden mb-4 aspect-[4/3] flex items-center justify-center">
+          <img id="armorImage" src="" alt="护甲" class="max-w-[80%] max-h-[80%] hidden">
+          <div id="armorPlaceholder" class="text-center p-4">
+            <i class="fa fa-shield-alt text-4xl mb-2 text-gray-300"></i>
+            <p class="text-gray-300 text-sm">点击下方按钮获取装备</p>
+          </div>
         </div>
+        <button onclick="randomizeSingle('armor', 25)" 
+                class="w-full bg-primary/90 hover:bg-primary text-white py-3 rounded-lg btn-touch flex items-center justify-center">
+          <i class="fa fa-refresh mr-2"></i> 刷新护甲
+          <span class="ml-2 bg-accent text-dark px-2 py-0.5 rounded text-xs" id="armorCount">3次</span>
+        </button>
       </div>
-      <button onclick="randomizeSingle('gun', 59)" 
-              class="w-full bg-primary hover:bg-primary/80 text-white py-3 rounded btn-touch flex items-center justify-center">
-        <i class="fa fa-refresh mr-2"></i> 刷新枪械
-        <span class="ml-2 bg-accent text-dark px-2 py-0.5 rounded text-xs" id="gunCount">3次</span>
-      </button>
+      
+      <!-- 枪械 -->
+      <div class="glass-effect rounded-xl p-4 border border-gray-700/30">
+        <h2 class="text-xl font-bold text-accent mb-3 flex items-center">
+          <i class="fa fa-crosshairs mr-2"></i>枪械
+        </h2>
+        <div class="image-container rounded-lg overflow-hidden mb-4 aspect-[4/3] flex items-center justify-center">
+          <img id="gunImage" src="" alt="枪械" class="max-w-[80%] max-h-[80%] hidden">
+          <div id="gunPlaceholder" class="text-center p-4">
+            <i class="fa fa-firearms text-4xl mb-2 text-gray-300"></i>
+            <p class="text-gray-300 text-sm">点击下方按钮获取装备</p>
+          </div>
+        </div>
+        <button onclick="randomizeSingle('gun', 59)" 
+                class="w-full bg-primary/90 hover:bg-primary text-white py-3 rounded-lg btn-touch flex items-center justify-center">
+          <i class="fa fa-refresh mr-2"></i> 刷新枪械
+          <span class="ml-2 bg-accent text-dark px-2 py-0.5 rounded text-xs" id="gunCount">3次</span>
+        </button>
+      </div>
+
+      <!-- 额外间隔，确保最后一个元素能完全显示 -->
+      <div class="h-6"></div>
     </div>
   </div>
   
-  <!-- 底部按钮区 -->
-  <div class="fixed bottom-3 left-3 right-3 z-10">
+  <!-- 底部固定按钮区 -->
+  <div class="fixed bottom-0 left-0 right-0 z-20 p-4 bg-gradient-to-t from-black/80 to-transparent">
     <button onclick="randomizeAll()" 
-            class="w-full bg-accent hover:bg-accent/90 text-dark font-bold py-3 rounded btn-touch flex items-center justify-center relative"
+            class="w-full bg-accent hover:bg-accent/90 text-dark font-bold py-3 rounded-lg btn-touch flex items-center justify-center relative"
             id="allBtn">
       <i class="fa fa-random mr-2"></i> 随机全部装备
       <span class="ml-2 bg-dark text-white px-2 py-0.5 rounded text-xs" id="allCooldown">30s</span>
     </button>
     
     <!-- 功能按钮 -->
-    <div class="flex gap-2 mt-2">
-      <button onclick="showRulesModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded btn-touch text-sm">
+    <div class="flex gap-3 mt-3">
+      <button onclick="showRulesModal()" class="flex-1 bg-gray-800/70 hover:bg-gray-700/70 text-white py-2.5 rounded-lg btn-touch text-sm">
         <i class="fa fa-info-circle mr-1"></i> 规则
       </button>
-      <button onclick="showAdminModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded btn-touch text-sm">
+      <button onclick="showAdminModal()" class="flex-1 bg-gray-800/70 hover:bg-gray-700/70 text-white py-2.5 rounded-lg btn-touch text-sm">
         <i class="fa fa-key mr-1"></i> 重置
       </button>
     </div>
   </div>
 
   <!-- 规则模态框 -->
-  <div id="rulesModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-dark border border-neon rounded-lg p-4 max-w-md w-full max-h-[80vh] overflow-y-auto">
+  <div id="rulesModal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-effect
+
+    <div class="glass      bg-gray-900/90
+      border border-neon/50
+      rounded-xl
+      p-5
+      max-w-md
+      w-full
+      max-h-[80vh]
+      overflow-y-auto
+    "
+    >
       <h3 class="text-lg font-bold text-neon mb-3">使用规则</h3>
-      <div class="space-y-2 text-sm">
-        <p><strong>1. 装备类型</strong></p>
+      <div class="space-y-3 text-sm text-gray-200">
+        <p><strong class="text-accent">1. 装备类型</strong></p>
         <ul class="list-disc pl-5 mb-2">
           <li>头盔（25种）</li>
           <li>护甲（25种）</li>
           <li>枪械（59种）</li>
         </ul>
         
-        <p><strong>2. 模式说明</strong></p>
+        <p><strong class="text-accent">2. 模式说明</strong></p>
         <ul class="list-disc pl-5 mb-2">
           <li>随机：所有装备概率均等</li>
           <li>均衡：中间等级装备概率高</li>
           <li>猛攻：高等级装备概率高</li>
         </ul>
         
-        <p><strong>3. 限制</strong></p>
+        <p><strong class="text-accent">3. 限制</strong></p>
         <ul class="list-disc pl-5">
           <li>单类装备每小时可刷新3次</li>
           <li>全部刷新有30秒冷却</li>
         </ul>
       </div>
-      <button onclick="hideRulesModal()" class="mt-4 w-full bg-accent text-dark py-2 rounded">关闭</button>
+      <button onclick="hideRulesModal()" class="mt-5 w-full bg-accent text-dark py-2.5 rounded-lg">关闭</button>
     </div>
   </div>
 
   <!-- 管理员模态框 -->
-  <div id="adminModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-dark border border-neon rounded-lg p-4 max-w-md w-full">
+  <div id="adminModal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden">
+    <div class="
+      bg-gray-900/90
+      border border-neon/50
+      rounded-xl
+      p-5
+      max-w-md
+      w-full
+    "
+    >
       <h3 class="text-lg font-bold text-neon mb-3 text-center">管理员密码</h3>
       <input type="password" id="adminPassword" placeholder="输入密码" 
-             class="w-full bg-gray-800 border border-gray-700 rounded p-2 mb-3 text-white">
-      <div class="flex gap-2">
-        <button onclick="verifyPassword()" class="flex-1 bg-accent text-dark py-2 rounded">确认</button>
-        <button onclick="hideAdminModal()" class="flex-1 bg-gray-700 text-white py-2 rounded">取消</button>
+             class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 mb-4 text-white">
+      <div class="flex gap-3">
+        <button onclick="verifyPassword()" class="flex-1 bg-accent text-dark py-2.5 rounded-lg">确认</button>
+        <button onclick="hideAdminModal()" class="flex-1 bg-gray-700 text-white py-2.5 rounded-lg">取消</button>
       </div>
-      <p id="passwordError" class="text-red-500 text-xs mt-2 text-center hidden">密码错误</p>
+      <p id="passwordError" class="text-red-500 text-xs mt-2 text-center hidden">密码错误，请重试</p>
     </div>
   </div>
 
@@ -226,10 +263,10 @@
         
         if (data.count <= 0 && (now < data.resetTime)) {
           btn.disabled = true;
-          btn.classList.add('opacity-50');
+          btn.classList.add('opacity-60');
         } else {
           btn.disabled = false;
-          btn.classList.remove('opacity-50');
+          btn.classList.remove('opacity-60');
         }
       });
       
@@ -241,11 +278,11 @@
       if (now - allLastUsed < 30000) {
         const remaining = Math.ceil((30000 - (now - allLastUsed)) / 1000);
         allBtn.disabled = true;
-        allBtn.classList.add('opacity-50');
+        allBtn.classList.add('opacity-60');
         allCooldownEl.textContent = `${remaining}s`;
       } else {
         allBtn.disabled = false;
-        allBtn.classList.remove('opacity-50');
+        allBtn.classList.remove('opacity-60');
         allCooldownEl.textContent = '30s';
       }
     }
@@ -259,11 +296,11 @@
       ['random', 'balanced', 'aggressive'].forEach(m => {
         const btn = document.getElementById(`${m}Mode`);
         if (m === mode) {
-          btn.classList.remove('bg-primary', 'text-white');
-          btn.classList.add('bg-neon', 'text-dark', 'font-bold');
+          btn.classList.remove('bg-primary/80', 'text-white');
+          btn.classList.add('bg-neon', 'text-primary', 'font-bold');
         } else {
-          btn.classList.remove('bg-neon', 'text-dark', 'font-bold');
-          btn.classList.add('bg-primary', 'text-white');
+          btn.classList.remove('bg-neon', 'text-primary', 'font-bold');
+          btn.classList.add('bg-primary/80', 'text-white');
         }
       });
     }
@@ -306,7 +343,7 @@
       }
     }
     
-    // 图片路径
+    // 图片路径映射
     const imagePaths = {
       helmet: './toukiu/toukiu (',
       armor: './hujia/huajia (',
